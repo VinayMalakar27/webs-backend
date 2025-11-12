@@ -16,7 +16,10 @@ connectDB();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: "*", // set to your Vercel URL in Render env, e.g. https://your-frontend.vercel.app
+    credentials: true
+  }));
 app.use(express.json());
 
 // simple request logger (debug)
