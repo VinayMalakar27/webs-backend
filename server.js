@@ -16,11 +16,14 @@ connectDB();
 const app = express();
 
 // Middleware
-app.use(cors(
-  {origin: "*",
-  credentials: true}
-));
+app.use(cors());
 app.use(express.json());
+
+// simple request logger (debug)
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} ${req.method} ${req.originalUrl}`);
+  next();
+});
 
 // Ensure uploads folder exists
 const uploadsDir = path.join(process.cwd(), "uploads");
@@ -33,13 +36,16 @@ if (!fs.existsSync(uploadsDir)) {
 // Serve static uploads
 app.use("/uploads", express.static(uploadsDir));
 
-// API Routes
-app.use("/auth", authRoutes);
-app.use("/users", userRoutes);
-app.use("/projects", projectRoutes);
-app.use("/tasks", taskRoutes);
-app.use("/dashboard", dashboardRoutes);
+// Health check
+app.get("/api/health", (req, res) => res.json({ ok: true, uptime: process.uptime() }));
+
+// API Routes (use /api prefix so frontend and backend match)
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/projects", projectRoutes);
+app.use("/api/tasks", taskRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 // Start server
-const PORT = process.env.PORT ;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
